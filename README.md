@@ -40,7 +40,7 @@
     command: db.createUser({
                 user: "assessment_project_user",
                 pwd: "assessment_project_pass",
-                roles: [{ role: "root", db: "assessment_project" }]
+                roles: [{ role: "readWrite", db: "assessment_project" }]
              })
 
 9. Go back to the Projects directory:

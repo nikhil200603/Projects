@@ -1,8 +1,12 @@
-from models import User, Project
+import time
 import traceback
+
+import jwt
 from passlib.context import CryptContext
-from config import JwtCred
 from bson import ObjectId
+
+from models import User, Project
+from config import JwtCred
 
 async def hashed_password(password): # function to hash password using bcrypt algorithm
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -32,8 +36,6 @@ async def verify_password (given_password, hashed_password):
     return pwd_context.verify(given_password, hashed_password)
 
 async def get_access_token(user_info, expiry, token_type):
-    import time
-    import jwt
     payload = {
         "user_name": user_info['user_name'],
         "role": user_info['role'],
@@ -41,7 +43,7 @@ async def get_access_token(user_info, expiry, token_type):
         "expires": time.time() + expiry
     }
     token = jwt.encode(payload, JwtCred.JWT_SECRET, algorithm=JwtCred.JWT_ALGORITHM)
-    return token.decode('utf-8')
+    return token
 
 async def login_user(user_data):
     try:
