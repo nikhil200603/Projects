@@ -1,0 +1,38 @@
+.
+├── app
+│   ├── api
+│   │   ├── auth_routes.py
+│   │   ├── common_helper.py
+│   │   ├── projects_routes.py
+│   │   └── __pycache__
+│   │       ├── auth_routes.cpython-38.pyc
+│   │       ├── common_helper.cpython-38.pyc
+│   │       └── projects_routes.cpython-38.pyc
+│   ├── auth
+│   │   ├── auth_bearer.py
+│   │   ├── authentication.py
+│   │   └── __pycache__
+│   │       ├── auth_bearer.cpython-38.pyc
+│   │       └── authentication.cpython-38.pyc
+│   ├── config.py
+│   ├── constants.py
+│   ├── database
+│   │   ├── db.py
+│   │   └── __pycache__
+│   │       └── db.cpython-38.pyc
+│   ├── main.py
+│   ├── models.py
+│   ├── __pycache__
+│   │   ├── config.cpython-38.pyc
+│   │   ├── constants.cpython-38.pyc
+│   │   ├── main.cpython-38.pyc
+│   │   ├── models.cpython-38.pyc
+│   │   ├── pydantic_models.cpython-38.pyc
+│   │   └── routes.cpython-38.pyc
+│   ├── pydantic_models.py
+│   └── routes.py
+├── project_structure.txt
+├── README.md
+└── requirements.txt
+
+8 directories, 27 files
