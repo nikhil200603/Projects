@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-from pydantic_models import RegisterSchema, LoginSchema
+from app.pydantic_models import RegisterSchema, LoginSchema
 from fastapi.responses import JSONResponse
 import traceback
-from api.common_helper import register_user, login_user
+from app.api.common_helper import register_user, login_user
 
 auth_router = APIRouter(prefix="/user", tags=["Account"])
 

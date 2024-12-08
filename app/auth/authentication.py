@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import HTTPException, Depends
 
-from auth.auth_bearer import JWTBearer
+from app.auth.auth_bearer import JWTBearer
 
 def require_roles(allowed_roles: List[str]):
     def dependency(user: dict = Depends(JWTBearer())):

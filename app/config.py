@@ -1,6 +1,7 @@
 
 
 MONGO_URI="mongodb://assessment_project_user:assessment_project_pass@localhost:27017/assessment_project?authSource=admin"
+MONGODB_AWS_LAMBDA_URI='mongodb+srv://assessment_project_user:assessment_project_pass@basecluster.qu14w.mongodb.net/'
 
 class JwtCred:
     JWT_SECRET = "039adc7ef49111e10e5325c33b37dbd044493ecb09d7e926fe6e5d4ab0dcce1d"

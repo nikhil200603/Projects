@@ -58,3 +58,37 @@
 
 14. Perform the required operations via the documentation interface.
 
+
+### Steps to Set Up the Project for Deploying in AWS Lambda:
+
+1. Move the main.py file from the app directory to the project directory.
+
+2. Update the requirements.txt file with the following versions, which are compatible with AWS Lambda:
+
+   mangum==0.19.0  
+   PyJWT==2.8.0  
+   pymongo==4.10.1  
+   q==2.7  
+   six==1.17.0
+
+3. Add app. to all imports originating from the app directory.
+
+   Example:  
+   Before:  
+   from api.auth_routes import auth_router
+
+   After:  
+   from app.api.auth_routes import auth_router
+
+4. Add a handler in the app.py file with the following code:
+
+   from mangum import Mangum
+
+   handler = Mangum(app)
+
+5. Add MONGODB_AWS_LAMBDA_URI in the config.py file, which should contain the MongoDB Atlas cluster URI. Ensure the connection is established using this URI.
+
+
+
+
+

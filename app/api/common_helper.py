@@ -5,8 +5,8 @@ import jwt
 from passlib.context import CryptContext
 from bson import ObjectId
 
-from models import User, Project
-from config import JwtCred
+from app.models import User, Project
+from app.config import JwtCred
 
 async def hashed_password(password): # function to hash password using bcrypt algorithm
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
