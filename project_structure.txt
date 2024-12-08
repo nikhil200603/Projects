@@ -20,7 +20,6 @@
 │   │   ├── db.py
 │   │   └── __pycache__
 │   │       └── db.cpython-38.pyc
-│   ├── main.py
 │   ├── models.py
 │   ├── __pycache__
 │   │   ├── config.cpython-38.pyc
@@ -31,8 +30,11 @@
 │   │   └── routes.cpython-38.pyc
 │   ├── pydantic_models.py
 │   └── routes.py
+├── main.py
 ├── project_structure.txt
+├── __pycache__
+│   └── main.cpython-38.pyc
 ├── README.md
 └── requirements.txt
 
-8 directories, 27 files
+9 directories, 28 files

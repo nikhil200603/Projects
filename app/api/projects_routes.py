@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
-from pydantic_models import ProjectSchema
+from app.pydantic_models import ProjectSchema
 from fastapi.responses import JSONResponse
 import traceback
-from api.common_helper import save_project_details, get_list_of_projects, update_project_details_by_id, delete_project_by_id
-from auth.auth_bearer import JWTBearer
-from constants import Role
-from auth.authentication import require_roles
+from app.api.common_helper import save_project_details, get_list_of_projects, update_project_details_by_id, delete_project_by_id
+from app.auth.auth_bearer import JWTBearer
+from app.constants import Role
+from app.auth.authentication import require_roles
 
 project_router = APIRouter(prefix="", tags=["Projects"])
 

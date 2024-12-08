@@ -5,7 +5,7 @@ from fastapi import Request, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import jwt
 
-from config import JwtCred
+from app.config import JwtCred
 
 class JWTBearer(HTTPBearer):
     def __init__(self, auto_error: bool = True):
