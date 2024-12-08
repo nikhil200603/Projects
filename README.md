@@ -61,7 +61,7 @@
 
 ### Steps to Set Up the Project for Deploying in AWS Lambda:
 
-# Alternatively, you can optionally pull the aws_lambda branch and start directly from step 6.
+# Alternatively, you can pull the aws_lambda branch and start directly from step 6.
 
 1. Move the main.py file from the app directory to the project directory.
 
@@ -126,5 +126,4 @@
 
 20. Now it is deployed and running.You can check by opening function URL.
 
-21. For swagger add /docs after function URL.
-
+21. For swagger link add /docs after function URL.
