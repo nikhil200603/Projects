@@ -23,3 +23,7 @@ class UserSchema(BaseModel):
     @classmethod
     def from_dict(cls, data: dict):
         return cls(**data)
+    
+class ProjectsFilterSchema(BaseModel):
+    page_no: int = Field(1)  # Default value of 1
+    title: Optional[str] = None  

@@ -3,11 +3,11 @@ import traceback
 
 import jwt
 from passlib.context import CryptContext
-from bson import ObjectId
 
 from models import User, Project
 from config import JwtCred
-from pydantic_models import UserSchema, ProjectSchema, RegisterSchema, LoginSchema
+from pydantic_models import UserSchema, ProjectSchema, RegisterSchema, LoginSchema, ProjectsFilterSchema
+from constants import PAGE_SIZE
 
 async def hashed_password(password:str): # function to hash password using bcrypt algorithm
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -83,9 +83,13 @@ async def save_project_details(project_data:ProjectSchema, user:UserSchema):
         print(traceback.format_exc())
         return {"success": False, "message": "Some error occurred", "status_code": 500}
 
-async def get_list_of_projects(user:UserSchema):
+async def get_list_of_projects(project_filter:ProjectsFilterSchema):
     try:
-        projects=Project.objects()
+        skip_count = (project_filter.page_no-1)*PAGE_SIZE
+        if project_filter.title:
+            projects=Project.objects(project_title__iregex=project_filter.title).skip(skip_count).limit(PAGE_SIZE)
+        else:
+            projects=Project.objects().skip(skip_count).limit(PAGE_SIZE)
         if not projects:
             return {"success": True, "data": [], "message": "No Projects Found", "status_code": 200}
 

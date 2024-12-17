@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from pydantic_models import ProjectSchema
+from pydantic_models import ProjectSchema, ProjectsFilterSchema
 from fastapi.responses import JSONResponse
 import traceback
 from api.common_helper import save_project_details, get_list_of_projects, update_project_details_by_id, delete_project_by_id
@@ -21,9 +21,9 @@ async def create_project(project_info: ProjectSchema = Depends(), user: dict = D
         return JSONResponse({"message":"Some error occured while saving project details"},status_code=500)
 
 @project_router.get("/projects")
-async def get_project( user: dict = Depends(require_roles([Role.ADMIN, Role.USER]))):
+async def get_project( project_filters:ProjectsFilterSchema = Depends(), user: dict = Depends(require_roles([Role.ADMIN, Role.USER]))):
     try:
-        response = await get_list_of_projects(user)
+        response = await get_list_of_projects(project_filters)
         if response['success']:
             return JSONResponse({"projects":response['data'], "message":response['message']}, status_code=response['status_code'])
 
