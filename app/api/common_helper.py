@@ -7,90 +7,87 @@ from bson import ObjectId
 
 from models import User, Project
 from config import JwtCred
+from pydantic_models import UserSchema, ProjectSchema, RegisterSchema, LoginSchema
 
-async def hashed_password(password): # function to hash password using bcrypt algorithm
+async def hashed_password(password:str): # function to hash password using bcrypt algorithm
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     hashed_password = pwd_context.hash(password)
     return hashed_password
 
-async def register_user(user_data):
+async def register_user(user_data: RegisterSchema):
     try:
-        if User.objects(user_name=user_data['user_name'].lower()).first():
-            return False, "User with this username already exist"
+        if User.objects(user_name=user_data.user_name.lower()).first():
+            return {"success": False, "message": "User with this username already exists", "status_code": 409}
         
-        password = await hashed_password(user_data.get('password'))
+        password = await hashed_password(user_data.password)
         user = User(
-            user_name=user_data.get('user_name').lower(),
+            user_name=user_data.user_name.lower(),
             password=password,
-            role=user_data.get('role')
+            role=user_data.role
         )
         user.save()  # Save the user in MongoDB
-        return True, "User Registered Successfully"
+        return {"success": True, "message": "User Registered Successfully", "status_code": 201}
 
     except Exception as e:
         print(traceback.format_exc())
-        return False, "Some error occured"
+        return {"success": False, "message": "Some error occurred", "status_code": 500}
 
-async def verify_password (given_password, hashed_password):
+async def verify_password (given_password:str, hashed_password:str):
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     return pwd_context.verify(given_password, hashed_password)
 
-async def get_access_token(user_info, expiry, token_type):
+async def get_access_token(user_info:UserSchema, role:str, expiry:int, token_type:str):
     payload = {
-        "user_name": user_info['user_name'],
-        "role": user_info['role'],
+        "user_name": user_info.user_name,
+        "role": role,
         "token_type": token_type,
         "expires": time.time() + expiry
     }
     token = jwt.encode(payload, JwtCred.JWT_SECRET, algorithm=JwtCred.JWT_ALGORITHM)
     return token
 
-async def login_user(user_data):
+async def login_user(user_data: LoginSchema):
     try:
-        if not User.objects(user_name= user_data['user_name']).first():
-            return False, None, "username is incorrect"
+        if not User.objects(user_name= user_data.user_name).first():
+            return {"success": False, "access_token": None, "message": "Username is incorrect", "status_code": 404}
 
-        if User.objects(user_name=user_data['user_name']).first():
-            object = User.objects(user_name=user_data['user_name']).first()
-            password_verified = await verify_password(user_data['password'], object.password)
+        if User.objects(user_name=user_data.user_name).first():
+            object = User.objects(user_name=user_data.user_name).first()
+            password_verified = await verify_password(user_data.password, object.password)
 
             if password_verified:
-                user_data['role'] = object.role
-                access_token = await get_access_token(user_data, JwtCred.JWT_VALIDITY, JwtCred.ACCESS_TOKEN )
-                return True, access_token, "Logged In successfully"
+                access_token = await get_access_token(user_data, object.role, JwtCred.JWT_VALIDITY, JwtCred.ACCESS_TOKEN )
+                return {"success": True, "access_token": access_token, "message": "Logged In successfully", "status_code": 200}
 
-        return False, None, "Incorrect Password"
+        return {"success": False, "access_token": None, "message": "Incorrect password", "status_code": 401}
 
     except Exception as e:
         print(traceback.format_exc())
-        return False, None, "Some error occured"
+        return {"success": False, "access_token": None, "message": "Some error occurred", "status_code": 500}
 
-async def save_project_details(project_data, user):
+async def save_project_details(project_data:ProjectSchema, user:UserSchema):
     try:
-        if Project.objects(project_title=project_data['project_title']).first():
-            return False, "Project with given title already exist"
+        if Project.objects(project_title=project_data.project_title).first():
+            return {"success": False, "message": "Project with given title already exists", "status_code": 409}
         
         project = Project(
-            project_title=project_data['project_title'],
-            description=project_data['description'],
-            status=project_data['status'],
+            project_title=project_data.project_title,
+            description=project_data.description,
+            status=project_data.status,
             owner=user.user_name
         )
         project.save()
-        return True, "Project Details Saved Successfully"
+        return {"success": True, "message": "Project Details Saved Successfully", "status_code": 201}
 
     except Exception as e:
         print(traceback.format_exc())
-        return False, "Some error occured"
+        return {"success": False, "message": "Some error occurred", "status_code": 500}
 
-async def get_list_of_projects(user):
+async def get_list_of_projects(user:UserSchema):
     try:
-        page_no = 2
-        page_size=1
-        start = page_size * (page_no-1)
-        projects=Project.objects(owner=user.user_name)
+        projects=Project.objects()
         if not projects:
-            return True, [], "No Projects Found"
+            return {"success": True, "data": [], "message": "No Projects Found", "status_code": 200}
 
         project_list=[]
         for project in projects:
@@ -98,42 +95,48 @@ async def get_list_of_projects(user):
             project_dict['_id']=str(project_dict['_id'])
             project_list.append(project_dict)
 
-        return True, project_list, "Projects fetched successfully"
+        return {"success": True, "data": project_list, "message": "Projects fetched successfully", "status_code": 200}
     except Exception as e:
         print(traceback.format_exc())
-        return False, None, "Some error occured"
+        return {"success": False, "data": None, "message": "Some error occurred", "status_code": 500}
 
-async def update_project_details_by_id(project_id, project_data):
+async def update_project_details_by_id(project_id:str, project_data:dict, user:UserSchema):
     try:
-        if len(project_id)!=24:
-            return False, "Invalid Project ID"
+        if len(project_id) != 24:
+            return {"message": "Invalid Project ID", "status_code": 400}
 
         project_obj = Project.objects.filter(id=project_id)
 
         if not project_obj:
-            return False, "Invalid Project ID"
+            return {"message": "Invalid Project ID", "status_code": 400}
 
-        if Project.objects.filter(id__ne=project_id, project_title = project_data['project_title']).first():
-            return False, "Project with given Project Title already exists"
+        if Project.objects.filter(id=project_id).first().owner != user.user_name:
+            return {"message": "You are not permitted to perform this action", "status_code": 403}
+
+        if Project.objects.filter(id__ne=project_id, project_title=project_data['project_title']).first():
+            return {"message": "Project with given Project Title already exists", "status_code": 409}
 
         project_obj.update(**project_data)
-        return True, "Project details updated successfully"
+        return {"message": "Project details updated successfully", "status_code": 200}
 
     except Exception as e:
         print(traceback.format_exc())
-        return False, "Some error occured"
-    
-async def delete_project_by_id(project_id):
+        return {"message": "Some error occurred", "status_code": 500}
+
+async def delete_project_by_id(project_id:str, user:UserSchema):
     try:
         if len(project_id)!=24:
-            return False, "Invalid Project ID"
+            return {"message": "Invalid Project ID", "status_code": 400}
 
-        project_obj = Project.objects.filter(id=project_id)
+        project_obj = Project.objects.filter(id=project_id).first()
         if not project_obj:
-            return False, "Invalid Project ID"
+            return {"message": "Invalid Project ID", "status_code": 400}
+        
+        if project_obj.owner != user.user_name:
+            return {"message": "You are not permitted to perform this action", "status_code": 403}
 
         project_obj.delete()
-        return True, "Project details deleted successfully"
+        return {"message": "Project details deleted successfully", "status_code": 200}
     except Exception as e:
         print(traceback.format_exc())
-        return False, "Some error occured"
+        return {"message": "Some error occurred", "status_code": 500}

@@ -16,7 +16,7 @@ class ProjectSchema(BaseModel):
     description: Optional[str] = Field("", max_length=200)
     status: Literal['Active', 'Completed', 'Archived']
 
-class User(BaseModel):
+class UserSchema(BaseModel):
     user_name: str = Field(..., max_length=15,)
     role: Literal["admin", "user"]
 
