@@ -14,7 +14,7 @@ async def create_project(project_info: ProjectSchema = Depends(), user: dict = D
     try:
 
         project_data= project_info.model_dump()
-        success, message = await save_project_details(project_data)
+        success, message = await save_project_details(project_data, user)
         if success:
             return JSONResponse({"message":message}, status_code=201)
 
@@ -26,7 +26,7 @@ async def create_project(project_info: ProjectSchema = Depends(), user: dict = D
 @project_router.get("/projects")
 async def get_project( user: dict = Depends(require_roles([Role.ADMIN, Role.USER]))):
     try:
-        success, project_list, message = await get_list_of_projects()
+        success, project_list, message = await get_list_of_projects(user)
         if success:
             return JSONResponse({"projects":project_list, "message":message})
 

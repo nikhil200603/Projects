@@ -15,12 +15,12 @@ async def hashed_password(password): # function to hash password using bcrypt al
 
 async def register_user(user_data):
     try:
-        if User.objects(user_name=user_data['user_name']).first():
+        if User.objects(user_name=user_data['user_name'].lower()).first():
             return False, "User with this username already exist"
         
         password = await hashed_password(user_data.get('password'))
         user = User(
-            user_name=user_data.get('user_name'),
+            user_name=user_data.get('user_name').lower(),
             password=password,
             role=user_data.get('role')
         )
@@ -65,7 +65,7 @@ async def login_user(user_data):
         print(traceback.format_exc())
         return False, None, "Some error occured"
 
-async def save_project_details(project_data):
+async def save_project_details(project_data, user):
     try:
         if Project.objects(project_title=project_data['project_title']).first():
             return False, "Project with given title already exist"
@@ -74,7 +74,7 @@ async def save_project_details(project_data):
             project_title=project_data['project_title'],
             description=project_data['description'],
             status=project_data['status'],
-            owner=project_data['owner']
+            owner=user.user_name
         )
         project.save()
         return True, "Project Details Saved Successfully"
@@ -83,9 +83,12 @@ async def save_project_details(project_data):
         print(traceback.format_exc())
         return False, "Some error occured"
 
-async def get_list_of_projects():
+async def get_list_of_projects(user):
     try:
-        projects=Project.objects()
+        page_no = 2
+        page_size=1
+        start = page_size * (page_no-1)
+        projects=Project.objects(owner=user.user_name)
         if not projects:
             return True, [], "No Projects Found"
 
