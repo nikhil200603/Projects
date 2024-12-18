@@ -5,6 +5,11 @@ class BadRequestException(HTTPException):
         super().__init__(status_code=400, detail=message)
         self.error_type = "Bad Request Error"
 
+class UnauthorizedException(HTTPException):
+    def __init__(self, message: str):
+        super().__init__(status_code=401, detail=message)
+        self.error_type = "Unauthorized"
+
 class NotFoundException(HTTPException):
     def __init__(self, message: str):
         super().__init__(status_code=404, detail=message)

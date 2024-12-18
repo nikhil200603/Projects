@@ -28,6 +28,10 @@ class ProjectsFilterSchema(BaseModel):
     page_no: int = Field(1)  # Default value of 1
     title: Optional[str] = None  
 
+class LoginResponse(BaseModel):
+    access_token:str
+    message:str
+
 class ProjectResponseModel(BaseModel):
     id: str
     project_title: str
@@ -47,6 +51,9 @@ class BadRequestException(BaseModel):
     error_type: str = "BAD_REQUEST_ERROR"
     message: str
 
+class UnauthorizedResponse(BaseModel):
+    error_type: str = "UNAUTHORIZED"
+    message: str
 class NotFoundResponse(BaseModel):
     error_type: str = "RESOURCE_NOT_FOUND"
     message: str

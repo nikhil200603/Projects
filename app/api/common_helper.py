@@ -8,7 +8,7 @@ from models import User, Project
 from config import JwtCred
 from pydantic_models import UserSchema, ProjectSchema, RegisterSchema, LoginSchema, ProjectsFilterSchema
 from constants import PAGE_SIZE
-from exception import ConflictException, ForbiddenException, BadRequestException, NotFoundException
+from exception import ConflictException, ForbiddenException, BadRequestException, NotFoundException, UnauthorizedException
 
 async def hashed_password(password:str): # function to hash password using bcrypt algorithm
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -16,22 +16,18 @@ async def hashed_password(password:str): # function to hash password using bcryp
     return hashed_password
 
 async def register_user(user_data: RegisterSchema):
-    try:
-        if User.objects(user_name=user_data.user_name.lower()).first():
-            return {"success": False, "message": "User with this username already exists", "status_code": 409}
-        
-        password = await hashed_password(user_data.password)
-        user = User(
-            user_name=user_data.user_name.lower(),
-            password=password,
-            role=user_data.role
-        )
-        user.save()  # Save the user in MongoDB
-        return {"success": True, "message": "User Registered Successfully", "status_code": 201}
 
-    except Exception as e:
-        print(traceback.format_exc())
-        return {"success": False, "message": "Some error occurred", "status_code": 500}
+    if User.objects(user_name=user_data.user_name.lower()).first():
+        raise ConflictException("User with this username already exists")
+    
+    password = await hashed_password(user_data.password)
+    user = User(
+        user_name=user_data.user_name.lower(),
+        password=password,
+        role=user_data.role
+    )
+    user.save()  # Save the user in MongoDB
+    return {"success": True, "message": "User Registered Successfully", "status_code": 201}
 
 async def verify_password (given_password:str, hashed_password:str):
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -48,23 +44,19 @@ async def get_access_token(user_info:UserSchema, role:str, expiry:int, token_typ
     return token
 
 async def login_user(user_data: LoginSchema):
-    try:
-        if not User.objects(user_name= user_data.user_name).first():
-            return {"success": False, "access_token": None, "message": "Username is incorrect", "status_code": 404}
 
-        if User.objects(user_name=user_data.user_name).first():
-            object = User.objects(user_name=user_data.user_name).first()
-            password_verified = await verify_password(user_data.password, object.password)
+    if not User.objects(user_name= user_data.user_name).first():
+        raise NotFoundException("User not found.")
 
-            if password_verified:
-                access_token = await get_access_token(user_data, object.role, JwtCred.JWT_VALIDITY, JwtCred.ACCESS_TOKEN )
-                return {"success": True, "access_token": access_token, "message": "Logged In successfully", "status_code": 200}
+    if User.objects(user_name=user_data.user_name).first():
+        object = User.objects(user_name=user_data.user_name).first()
+        password_verified = await verify_password(user_data.password, object.password)
 
-        return {"success": False, "access_token": None, "message": "Incorrect password", "status_code": 401}
+        if password_verified:
+            access_token = await get_access_token(user_data, object.role, JwtCred.JWT_VALIDITY, JwtCred.ACCESS_TOKEN )
+            return {"success": True, "access_token": access_token, "message": "Logged In successfully", "status_code": 200}
 
-    except Exception as e:
-        print(traceback.format_exc())
-        return {"success": False, "access_token": None, "message": "Some error occurred", "status_code": 500}
+    raise UnauthorizedException("Incorrect password")
 
 async def save_project_details(project_data:ProjectSchema, user:UserSchema):
 

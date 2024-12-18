@@ -1,12 +1,13 @@
 import uvicorn
 from contextlib import asynccontextmanager
+import traceback
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from routes import router
 from database.db import connect_db, disconnect_db
-from exception import ConflictException, NotFoundException, ForbiddenException, BadRequestException
+from exception import ConflictException, NotFoundException, ForbiddenException, BadRequestException, UnauthorizedException
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,6 +27,13 @@ async def unauthorized_exception_handler(request: Request, exc: BadRequestExcept
     return JSONResponse(
         status_code=exc.status_code,
         content={"error_type": exc.error_type, "message": exc.detail},
+    )
+
+@app.exception_handler(UnauthorizedException)
+async def unauthorized_exception_handler(request: Request, exc: UnauthorizedException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error_type": exc.error_type,"message": exc.detail},
     )
 
 @app.exception_handler(NotFoundException)
@@ -51,6 +59,7 @@ async def conflict_exception_handler(request: Request, exc: ConflictException):
 
 @app.exception_handler(Exception)
 async def internal_server_error_handler(request: Request, exc: Exception):
+    print(traceback.format_exc())
     return JSONResponse(
         status_code=500,
         content={

@@ -1,30 +1,18 @@
 from fastapi import APIRouter, Depends
-from pydantic_models import RegisterSchema, LoginSchema
-from fastapi.responses import JSONResponse
-import traceback
+from pydantic_models import RegisterSchema, LoginSchema, SuccessResponse, ConflictResponse, InternalServerErrorResponse, LoginResponse, NotFoundResponse, UnauthorizedResponse
 from api.common_helper import register_user, login_user
-
+ 
 auth_router = APIRouter(prefix="/user", tags=["Account"])
 
-@auth_router.post("/register")
+@auth_router.post("/register", response_model= SuccessResponse, responses={409: {"model": ConflictResponse}, 500: {"model": InternalServerErrorResponse}})
 async def register(user_info: RegisterSchema = Depends()):
-    try:
-        response= await register_user(user_info)
-        if response['success']:
-            return JSONResponse({"message":response['message']}, status_code=response['status_code'])
-        return JSONResponse({"message":response['message']}, status_code=response['status_code'])
-    except Exception as e:
-        print(traceback.format_exc())
-        return JSONResponse({"message":f"Some error occured while registering as {user_info['role']}"},status_code=500)
+
+    response= await register_user(user_info)
+    return SuccessResponse(success=False, message=response['message'])
 
 
-@auth_router.get("/login")
+@auth_router.get("/login", response_model= LoginResponse, responses={401: {"model": UnauthorizedResponse}, 404: {"model": NotFoundResponse}, 500: {"model": InternalServerErrorResponse}})
 async def login(user_info: LoginSchema = Depends()):
-    try:
-        response = await login_user(user_info)
-        if response['success']:
-            return JSONResponse({"message":response['message'], "token":response['access_token']}, status_code=response['status_code'])
-        return JSONResponse({"message":response['message']}, status_code=response['status_code'])
-    except Exception as e:
-        print(traceback.format_exc())
-        return JSONResponse({"message":f"Some error occured"},status_code=500)
+
+    response = await login_user(user_info)
+    return LoginResponse(token = response['access_token'], message= response['message'])
