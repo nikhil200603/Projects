@@ -9,7 +9,7 @@ from auth.authentication import require_roles
 
 project_router = APIRouter(prefix="", tags=["Projects"])
 
-@project_router.post("/projects",  response_model=SuccessResponse, responses={409: {"model": ConflictResponse}, 500: {"model": InternalServerErrorResponse}})
+@project_router.post("/projects",  response_model=SuccessResponse, responses={403: {"model": ForbiddenResponse}, 409: {"model": ConflictResponse}, 500: {"model": InternalServerErrorResponse}})
 async def create_project(project_info: ProjectSchema = Depends(), user: UserSchema = Depends(require_roles([Role.ADMIN]))):
 
     response = await save_project_details(project_info, user)
