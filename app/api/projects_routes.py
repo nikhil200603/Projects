@@ -16,7 +16,7 @@ async def create_project(project_info: ProjectSchema = Depends(), user: UserSche
     return SuccessResponse(success=response['success'], message=response['message'])
 
 
-@project_router.get("/projects", response_model= GetProjectsResponseModel, responses={404: {"model": NotFoundResponse}, 409: {"model": ConflictResponse}, 500: {"model": InternalServerErrorResponse}})
+@project_router.get("/projects", response_model= GetProjectsResponseModel, responses={404: {"model": NotFoundResponse}, 500: {"model": InternalServerErrorResponse}})
 async def get_project( project_filters:ProjectsFilterSchema = Depends(), user: UserSchema = Depends(require_roles([Role.ADMIN, Role.USER]))):
 
     response = await get_list_of_projects(project_filters)

@@ -15,4 +15,4 @@ async def register(user_info: RegisterSchema = Depends()):
 async def login(user_info: LoginSchema = Depends()):
 
     response = await login_user(user_info)
-    return LoginResponse(token = response['access_token'], message= response['message'])
+    return LoginResponse(access_token = response['access_token'], message= response['message'])
